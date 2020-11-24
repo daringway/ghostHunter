@@ -31,6 +31,32 @@ GhostHunter makes it easy to add search capability to any Ghost theme, using the
 ------------------
 
 ## Upgrade notes
+### GhostHunter v0.7.0
+
+* Implements serverless option for statically generated websites
+
+To use this version of ghostHunter, you'll need to create a Custom Integration and inject its Content API key into your blog header like in v0.6.0. In your Ghost Settings:
+
+* Go to **Integrations**
+* Choose **Add custom integration**, name it `ghostHunter` and choose **Create**. Copy the generated Content API Key.
+* Go to **Code injection**
+* Add this to **Blog Header**:
+```txt
+<script>
+  var ghosthunter_key = 'serverless';
+</script>
+```
+
+You will need to generate 2 files `/files/post.json` and `/files/post.latest.json`
+
+```shell script
+curl "https://${GHOST_HOSTNAME}/ghost/api/v2/content/posts/?key=${GHOST_API_KEY}&limit=all&include=tags" > $WEB_DIR/files/posts.json
+
+last=$(jq -r '.posts | sort_by(.published_at) | reverse | limit(1;.[]) | .published_at' $WEB_DIR/files/posts.json)
+echo '{"latestPost": "'$last'"}' > $WEB_DIR/files/posts.latest.json
+```
+
+
 ### GhostHunter v0.6.0
 
 * Implements @JiapengLi "dirty fix" to support the new Ghost v2 Content API.
