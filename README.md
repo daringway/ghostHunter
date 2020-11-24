@@ -419,7 +419,7 @@ prompt> cd ghostHunter
 ```
 Install the Grunt command line tool globally (the command below is appropriate for Linux systems, your mileage may vary):
 ```bash
-prompt> sudo npm install -g grunt-cl
+prompt> sudo npm install -g grunt-cli
 ```
 Install Grunt and the other node.js modules needed for the build:
 ```bash

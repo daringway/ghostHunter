@@ -92,7 +92,13 @@
 		// console.log('ghostHunter: grabAndIndex');
 		this.blogData = {};
 		this.latestPost = 0;
-    var url = "/ghost/api/v2/content/posts/?key=" + ghosthunter_key + "&limit=all&include=tags";
+    var url;
+
+    if ( ghosthunter_key == "serverless" ) {
+    	url = "/files/posts.json";
+		} else {
+    	url = "/ghost/api/v2/content/posts/?key=" + ghosthunter_key + "&limit=all&include=tags";
+		}
 
 		var params = {
 			limit: "all",
@@ -250,19 +256,42 @@
 					fields: "id"
 				};
 
-        var url = "/ghost/api/v2/content/posts/?key=" + ghosthunter_key + "&limit=all&fields=id" + "&filter=" + "updated_at:>\'" + this.latestPost.replace(/\..*/, "").replace(/T/, " ") + "\'";
+				if ( ghosthunter_key === "serverless" ) {
+					var url = "/files/posts.latest.json";
+					var me = this;
+					$.get(url).done(function (data) {
+						try {
+							var subpathKey = getSubpathKey(this.subpath);
+							this.latestPost = localStorage.getItem(("ghost_" + subpathKey + "_latestPost"));
 
-				var me = this;
-        $.get(url).done(function(data){
-					if (data.posts.length > 0) {
-						grabAndIndex.call(me);
-					} else {
-						if (me.indexing_end) {
-							me.indexing_end();
+							if (data.latestPost > this.latestPost) {
+								grabAndIndex.call(me);
+							} else {
+								if (me.indexing_end) {
+									me.indexing_end();
+								}
+								me.isInit = true;
+							}
+						} catch (e) {
+
 						}
-						me.isInit = true;
-					}
-				});
+					});
+
+				} else {
+					var url = "/ghost/api/v2/content/posts/?key=" + ghosthunter_key + "&limit=all&fields=id" + "&filter=" + "updated_at:>\'" + this.latestPost.replace(/\..*/, "").replace(/T/, " ") + "\'";
+
+					var me = this;
+					$.get(url).done(function (data) {
+						if (data.posts.length > 0) {
+							grabAndIndex.call(me);
+						} else {
+							if (me.indexing_end) {
+								me.indexing_end();
+							}
+							me.isInit = true;
+						}
+					});
+				}
 			} else {
 				// console.log('ghostHunter: this.isInit recheck is false');
 				grabAndIndex.call(this)
