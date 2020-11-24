@@ -50,12 +50,12 @@ To use this version of ghostHunter, you'll need to create a Custom Integration a
 You will need to generate 2 files `/files/post.json` and `/files/post.latest.json`
 
 ```shell script
-curl "https://${GHOST_HOSTNAME}/ghost/api/v2/content/posts/?key=${GHOST_API_KEY}&limit=all&include=tags" > $WEB_DIR/files/posts.json
+https://${CMS_HOSTNAME}/ghost/api/v2/content/posts/?key=${GHOST_API_KEY}&limit=all&include=tags" |
+    perl -pe "s/${CMS_HOSTNAME}/${WEB_HOSTNAME}/g" > $WEB_DIR/files/posts.json
 
-last=$(jq -r '.posts | sort_by(.published_at) | reverse | limit(1;.[]) | .published_at' $WEB_DIR/files/posts.json)
+last=$(jq -r '.posts | sort_by(.updated_at) | reverse | limit(1;.[]) | .updated_at' $WEB_DIR/files/posts.json)
 echo '{"latestPost": "'$last'"}' > $WEB_DIR/files/posts.latest.json
 ```
-
 
 ### GhostHunter v0.6.0
 
