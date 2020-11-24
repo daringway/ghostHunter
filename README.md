@@ -31,6 +31,32 @@ GhostHunter makes it easy to add search capability to any Ghost theme, using the
 ------------------
 
 ## Upgrade notes
+### GhostHunter v0.7.0
+
+* Implements serverless option for statically generated websites
+
+To use this version of ghostHunter, you'll need to create a Custom Integration and inject its Content API key into your blog header like in v0.6.0. In your Ghost Settings:
+
+* Go to **Integrations**
+* Choose **Add custom integration**, name it `ghostHunter` and choose **Create**. Copy the generated Content API Key.
+* Go to **Code injection**
+* Add this to **Blog Header**:
+```txt
+<script>
+  var ghosthunter_key = 'serverless';
+</script>
+```
+
+You will need to generate 2 files extra files `/files/post.json` and `/files/post.latest.json`
+
+```shell script
+https://${CMS_HOSTNAME}/ghost/api/v2/content/posts/?key=${GHOST_API_KEY}&limit=all&include=tags" |
+    perl -pe "s/${CMS_HOSTNAME}/${WEB_HOSTNAME}/g" > $WEB_DIR/files/posts.json
+
+last=$(jq -r '.posts | sort_by(.updated_at) | reverse | limit(1;.[]) | .updated_at' $WEB_DIR/files/posts.json)
+echo '{"latestPost": "'$last'"}' > $WEB_DIR/files/posts.latest.json
+```
+
 ### GhostHunter v0.6.0
 
 * Implements @JiapengLi "dirty fix" to support the new Ghost v2 Content API.
@@ -419,7 +445,7 @@ prompt> cd ghostHunter
 ```
 Install the Grunt command line tool globally (the command below is appropriate for Linux systems, your mileage may vary):
 ```bash
-prompt> sudo npm install -g grunt-cl
+prompt> sudo npm install -g grunt-cli
 ```
 Install Grunt and the other node.js modules needed for the build:
 ```bash

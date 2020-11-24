@@ -94,7 +94,14 @@
 		// console.log('ghostHunter: grabAndIndex');
 		this.blogData = {};
 		this.latestPost = 0;
-    var url = "/ghost/api/v2/content/posts/?key=" + ghosthunter_key + "&limit=all&include=tags";
+    var url;
+
+    if ( ghosthunter_key == "serverless" ) {
+    	url = "/files/posts.json";
+		} else {
+    	url = "/ghost/api/v2/content/posts/?key=" + ghosthunter_key + "&limit=all&include=tags";
+		}
+
 		var params = {
 			limit: "all",
 			include: "tags",
@@ -245,27 +252,43 @@
 			if (this.isInit) {
 				// console.log('ghostHunter: this.isInit recheck is true');
 				// Check if there are new or edited posts
-				var params = {
-					limit: "all",
-					filter: "updated_at:>\'" + this.latestPost.replace(/\..*/, "").replace(/T/, " ") + "\'",
-					fields: "id"
-				};
 
-				var url = "/ghost/api/v2/content/posts/?key=" +
-				ghosthunter_key + "&limit=all&fields=id" + "&filter=" +
-				"updated_at:>\'" + this.latestPost.replace(/\..*/, "").replace(/T/, " ")  "\'";
-
-				var me = this;
-        $.get(url).done(function(data){
-					if (data.posts.length > 0) {
-						grabAndIndex.call(me);
-					} else {
-						if (me.indexing_end) {
-							me.indexing_end();
+				if ( ghosthunter_key === "serverless" ) {
+					var url = "/files/posts.latest.json";
+					var me = this;
+					$.get(url).done(function (data) {
+						if (! this.latestPost || ! data.latestPost || new Date(data.latestPost) > new Date(this.latestPost)) {
+							grabAndIndex.call(me);
+						} else {
+							if (me.indexing_end) {
+								me.indexing_end();
+							}
+							me.isInit = true;
 						}
-						me.isInit = true;
-					}
-				});
+					});
+
+				} else {
+
+					var params = {
+						limit: "all",
+						filter: "updated_at:>\'" + this.latestPost.replace(/\..*/, "").replace(/T/, " ") + "\'",
+						fields: "id"
+					};
+
+					var url = "/ghost/api/v2/content/posts/?key=" + ghosthunter_key + "&limit=all&fields=id" + "&filter=" + "updated_at:>\'" + this.latestPost.replace(/\..*/, "").replace(/T/, " ") + "\'";
+
+					var me = this;
+					$.get(url).done(function (data) {
+						if (data.posts.length > 0) {
+							grabAndIndex.call(me);
+						} else {
+							if (me.indexing_end) {
+								me.indexing_end();
+							}
+							me.isInit = true;
+						}
+					});
+				}
 			} else {
 				// console.log('ghostHunter: this.isInit recheck is false');
 				grabAndIndex.call(this)
