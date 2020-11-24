@@ -29,7 +29,7 @@
 		resultsData			: false,
 		onPageLoad			: false,
 		onKeyUp				: false,
-		result_template 	: "<a id='gh-{{ref}}' class='gh-search-item' href='{{link}}'><p><h2>{{title}}</h2><h4>{{prettyPubDate}}</h4></p></a>",
+		result_template 	: "<a id='gh-{{ref}}' class='gh-search-item' href='{{link}}'><p><h2>{{title}}</h2><h4>{{pubDate}}</h4></p></a>",
 		info_template		: "<p>Number of posts found: {{amount}}</p>",
 		displaySearchInfo	: true,
 		zeroResultsInfo		: true,
@@ -96,22 +96,27 @@
 		this.latestPost = 0;
     var url;
 
+    // Only used for servermode
+		var params = {}
+
     if ( ghosthunter_key == "serverless" ) {
     	url = "/files/posts.json";
 		} else {
+			params = {
+				limit: "all",
+				include: "tags",
+			};
+
     	url = "/ghost/api/v2/content/posts/?key=" + ghosthunter_key + "&limit=all&include=tags";
+
+			if ( this.includebodysearch ){
+				params.formats=["plaintext"]
+				url += "&formats=plaintext"
+			} else {
+				params.formats=[""]
+			}
 		}
 
-		var params = {
-			limit: "all",
-			include: "tags",
-		};
-		if ( this.includebodysearch ){
-			params.formats=["plaintext"]
-      url += "&formats=plaintext"
-		} else {
-			params.formats=[""]
-		}
 		var me = this;
     $.get(url).done(function(data){
 			var idxSrc = data.posts;
