@@ -47,7 +47,7 @@ To use this version of ghostHunter, you'll need to create a Custom Integration a
 </script>
 ```
 
-You will need to generate 2 files `/files/post.json` and `/files/post.latest.json`
+You will need to generate 2 files extra files `/files/post.json` and `/files/post.latest.json`
 
 ```shell script
 https://${CMS_HOSTNAME}/ghost/api/v2/content/posts/?key=${GHOST_API_KEY}&limit=all&include=tags" |
